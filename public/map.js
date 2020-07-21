@@ -7,8 +7,12 @@ function init () {
         center: [55.76, 37.64],
         zoom: 10
     }, {
-        searchControlProvider: 'yandex#search'
+        searchControlProvider: 'yandex#map'
     });
+
+
+    
+
 
     loadingObjectManager = new ymaps.LoadingObjectManager('http://127.0.0.1:3000/q?bbox=%b', {   
         // Включаем кластеризацию.
@@ -18,7 +22,7 @@ function init () {
         clusterHasBalloon: false,
         // Опции объектов задаются с префиксом geoObject.
         geoObjectOpenBalloonOnClick: false,
-        splitRequests : true
+        splitRequests : false
     });
 
     myMap.geoObjects.add(loadingObjectManager);
@@ -53,3 +57,4 @@ function init () {
     // });
 
 }
+
