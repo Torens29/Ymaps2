@@ -10,10 +10,6 @@ function init () {
         searchControlProvider: 'yandex#map'
     });
 
-
-    
-
-
     loadingObjectManager = new ymaps.LoadingObjectManager('http://127.0.0.1:3000/q?bbox=%b', {   
         // Включаем кластеризацию.
         clusterize: true,
