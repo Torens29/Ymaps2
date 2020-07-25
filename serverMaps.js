@@ -54,79 +54,79 @@ app.get('/q', function (req, res) {
     // }
 
 
-    async function fPush(featuresDB){
-        for (i = 0; i < featuresDB.length; i++) {
-            searchPoint(featuresDB[i], i, requestBbox)
-                .then((feature)=>{
-                    // console.log('dssdsd '); Попробовать вместе с key проходить по Obj и forEach по масиву
-                    // console.log('ob ', objects.features.length)
-                    if(objects.features.length == 0){
-                        objects.features.push(feature);
-                    }else{
-                        for(j = 0; j < objects.features.length; j++)
-                            o = objects.features[j];
-                            // console.log("o", o);
-                            for(key in o){
-                                // console.log(key)
-                                if(key == 'id'){
-                                    if(feature.id != key.id){
-                                        arr.push(feature);
-                                        // console.loп(arr)
-                                    }else{
-                                        console.log('есть элемент ', feature.id)
-                                    }
+    sendFeatures(featuresDB,requestBbox).then(obj => res.jsonp(obj));
+});
+
+async function sendFeatures(featuresDB, requestBbox){
+    await  fPush(featuresDB, requestBbox);
+    console.log('send:', objects);
+    return(objects)
+    // res.jsonp(objects);
+}
+
+async function fPush(featuresDB, requestBbox){
+    for (i = 0; i < featuresDB.length; i++) {
+        searchPoint(featuresDB[i], i, requestBbox)
+            .then((feature)=>{
+                // console.log('dssdsd '); Попробовать вместе с key проходить по Obj и forEach по масиву
+                // console.log('ob ', objects.features.length)
+                if(objects.features.length == 0){
+                    objects.features.push(feature);
+                }else{
+                    for(j = 0; j < objects.features.length; j++)
+                        o = objects.features[j];
+                        // console.log("o", o);
+                        for(key in o){
+                            // console.log(key)
+                            if(key == 'id'){
+                                if(feature.id != key.id){
+                                    arr.push(feature);
+                                    // console.loп(arr)
+                                }else{
+                                    console.log('есть элемент ', feature.id)
                                 }
                             }
-                    }
-                    
-                    console.log('WQWQWQWQWQW ',objects);
-                    console.log(objects.features[0].geometry.coordinates)
-                    
-                })
-                .catch(err =>{
-                    // console.log(err)
-                })
-            
-        }
-    }
-
-    async function sendFeatures(featuresDB){
-        await  fPush(featuresDB);
-        console.log('send:', objects)
-        res.jsonp(objects);
-    }
-
-    async function searchPoint(address, i, requestBbox) {
-        const geocoderUrl = 'https://geocode-maps.yandex.ru/1.x?apikey=28d74b24-f33d-4b35-8949-88142b0c9d92&lang=ru_RU&format=json&geocode=' +
-        encodeURIComponent(address.address) +
-        `bbox=${requestBbox[0]},${requestBbox[1]} ~ 
-                ${requestBbox[2]}, ${requestBbox[3]}`;
-        let res = await axios.get(geocoderUrl).then(res => res.data);
-                // console.log('point Search  '+ i, res.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' '));
-        let coordinates = res.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ');
-        // console.log(res.response.GeoObjectCollection.featureMember[0])
-        coordinates[0] = parseFloat(coordinates[1]);
-        coordinates[1] = parseFloat(coordinates[0]);
-        let feature = {
-            type: "Feature",
-            id: i,
-            geometry:{
-                type: "Point", 
-                coordinates: coordinates,
-                properties: {
-                    balloonContent: "Содержимое балуна",
-                    clusterCaption: "Метка 1",
-                    hintContent: "Текст подсказки"
+                        }
                 }
-            } 
-        }
-        // console.log('in fuc', feature)
-        return feature;
+                
+                console.log('WQWQWQWQWQW ',objects);
+                console.log(objects.features[0].geometry.coordinates)
+                
+            })
+            .catch(err =>{
+                // console.log(err)
+            })
+        
     }
-    
-    
-    sendFeatures(featuresDB);
-});
+}
+
+async function searchPoint(address, i, requestBbox) {
+    const geocoderUrl = 'https://geocode-maps.yandex.ru/1.x?apikey=28d74b24-f33d-4b35-8949-88142b0c9d92&lang=ru_RU&format=json&geocode=' +
+    encodeURIComponent(address.address) +
+    `bbox=${requestBbox[0]},${requestBbox[1]} ~ 
+            ${requestBbox[2]}, ${requestBbox[3]}`;
+    let res = await axios.get(geocoderUrl).then(res => res.data);
+            // console.log('point Search  '+ i, res.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' '));
+    let coordinates = res.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ');
+    // console.log(res.response.GeoObjectCollection.featureMember[0])
+    coordinates[0] = parseFloat(coordinates[1]);
+    coordinates[1] = parseFloat(coordinates[0]);
+    let feature = {
+        type: "Feature",
+        id: i,
+        geometry:{
+            type: "Point", 
+            coordinates: coordinates,
+            properties: {
+                balloonContent: "Содержимое балуна",
+                clusterCaption: "Метка 1",
+                hintContent: "Текст подсказки"
+            }
+        } 
+    }
+    // console.log('in fuc', feature)
+    return feature;
+}
 
 
 // process.on("SIGINT", () => {
