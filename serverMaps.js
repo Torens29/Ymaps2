@@ -1,23 +1,28 @@
  let express =  require('express');
 const axios = require('axios');
 const MongoClient = require("mongodb").MongoClient;
+const fs = require("fs");
 
 let db, dbClient, collection, featuresDB =[];
 let mongoClient = new MongoClient("mongodb://localhost:27017/", { useNewUrlParser: true ,useUnifiedTopology: true});
 
 let objects = {
     type: 'FeatureCollection',
-    features: []           
+    features: [{
+        "type": "Feature",
+        "id": 0,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [55.831903, 37.411961]
+        }
+    }]           
 };
-
-
-
 
 mongoClient.connect(function(err, client){
 
     if(err) return console.log(err);    
     db = client.db("Tenders");
-    collection =  db.collection('tenderInfo');
+    collection =  db.collection('tenderInfo2');
     dbClient = client;
     
   
@@ -32,7 +37,6 @@ mongoClient.connect(function(err, client){
 let app =  express();
 app.use(express.static(__dirname + "/public"));
 app.get('/', function (req, res){
-        // res.sendFile( __dirname + '/map.html');
         res.redirect('map.html');   
 });
 
@@ -40,20 +44,6 @@ app.get('/q', function (req, res) {
 
     var requestBbox = req.query.bbox;
     console.log(req.query.bbox);
-    // var arrayBbox = requestBbox.split(',');
-    // var bbox = [];
-    // var filteredFeatures = [];
-    // var sortedFeatures;
-    // var clusteredFeatures = [];
-    // var clusterPresets = ["islands#yellowClusterIcons"];
-    // var tempFeatures = [];
-    // var types = ['школа', 'кафе', 'аптека', 'банк'];
-
-    // for (var i = 0; i < arrayBbox.length; i++) {
-    //     bbox[i] = parseFloat(arrayBbox[i]);
-    // }
-
-
     sendFeatures(featuresDB,requestBbox).then(obj => res.jsonp(obj));
 });
 
@@ -65,67 +55,73 @@ async function sendFeatures(featuresDB, requestBbox){
 }
 
 async function fPush(featuresDB, requestBbox){
+    console.log(featuresDB.length)
     for (i = 0; i < featuresDB.length; i++) {
-        searchPoint(featuresDB[i], i, requestBbox)
-            .then((feature)=>{
-                // console.log('dssdsd '); Попробовать вместе с key проходить по Obj и forEach по масиву
-                // console.log('ob ', objects.features.length)
-                if(objects.features.length == 0){
-                    objects.features.push(feature);
-                }else{
-                    for(j = 0; j < objects.features.length; j++)
-                        o = objects.features[j];
-                        // console.log("o", o);
-                        for(key in o){
-                            // console.log(key)
-                            if(key == 'id'){
-                                if(feature.id != key.id){
-                                    arr.push(feature);
-                                    // console.loп(arr)
-                                }else{
-                                    console.log('есть элемент ', feature.id)
-                                }
-                            }
-                        }
+        console.log(i, featuresDB[i].coords)
+        if (featuresDB[i].coords[1] >= requestBbox[0] && featuresDB[i].coords[1] <= requestBbox[2] &&
+            featuresDB[i].coords[0] >= requestBbox[1] && featuresDB[i].coords[0] <= requestBbox[3]) {
+            objects.features.forEach((item, i, arr) => {
+                if(item.id != featuresDB.id){
+                    console.log('pushss')
+                    objects.features.push(featuresDB);
                 }
-                
-                console.log('WQWQWQWQWQW ',objects);
-                console.log(objects.features[0].geometry.coordinates)
-                
-            })
-            .catch(err =>{
-                // console.log(err)
-            })
-        
+            });
+        }
     }
+    console.log('obj: ', objects)
+    return objects;
+    //     searchPoint(featuresDB[i], i, requestBbox)
+    //         .then((feature)=>{
+    //             // console.log('dssdsd '); Попробовать вместе с key проходить по Obj и forEach по масиву
+    //             // console.log('ob ', objects.features.length)
+    //             if(feature == null){
+    //                 console.log('feature', feature)
+    //             }else
+    //             if(objects.features.length == 0){
+    //                 objects.features.push(feature);
+    //                 console.log('равно 0 ', feature);
+    //             }else{
+    //                 for(j = 0; j < objects.features.length; j++)
+    //                     o = objects.features[j];
+    //                     // console.log("o", o);
+    //                     for(key in o){
+    //                         // console.log(key)
+    //                         if(key == 'id'){
+    //                             if(feature.id != key.id){
+    //                                 objects.features.push(feature);
+    //                                 // console.loп(arr)
+    //                             }else{
+    //                                 console.log('есть элемент ', feature.id)
+    //                             }
+    //                         }
+    //                     }
+    //             }
+                
+    //             console.log('WQWQWQWQWQW ',objects);
+    //             console.log(objects.features[0].geometry.coordinates)
+                
+    //         })
+    //         .catch(err =>{
+    //             // console.log('ERR',err)
+    //             fs.appendFile("hello.txt", err+'/\n/', function(error){
+    //                 if(error) throw error; // если возникла ошибка
+                                 
+    //                 // console.log("Запись файла завершена.");
+    //             });
+    //         });
+        
+    // }
 }
 
-async function searchPoint(address, i, requestBbox) {
-    const geocoderUrl = 'https://geocode-maps.yandex.ru/1.x?apikey=28d74b24-f33d-4b35-8949-88142b0c9d92&lang=ru_RU&format=json&geocode=' +
-    encodeURIComponent(address.address) +
-    `bbox=${requestBbox[0]},${requestBbox[1]} ~ 
-            ${requestBbox[2]}, ${requestBbox[3]}`;
-    let res = await axios.get(geocoderUrl).then(res => res.data);
-            // console.log('point Search  '+ i, res.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' '));
-    let coordinates = res.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ');
-    // console.log(res.response.GeoObjectCollection.featureMember[0])
-    coordinates[0] = parseFloat(coordinates[1]);
-    coordinates[1] = parseFloat(coordinates[0]);
-    let feature = {
-        type: "Feature",
-        id: i,
-        geometry:{
-            type: "Point", 
-            coordinates: coordinates,
-            properties: {
-                balloonContent: "Содержимое балуна",
-                clusterCaption: "Метка 1",
-                hintContent: "Текст подсказки"
-            }
-        } 
+async function searchPoint(IfeaturesDB, i, requestBbox) {
+    if(IfeaturesDB.coords[0] >= requestBbox[0] &&
+        IfeaturesDB.coords[0] <= requestBbox[2] &&
+        IfeaturesDB.coords[1] >= requestBbox[1] &&
+        IfeaturesDB.coords[1] <= requestBbox[3]) {
+        
+        return feature;
     }
-    // console.log('in fuc', feature)
-    return feature;
+    
 }
 
 

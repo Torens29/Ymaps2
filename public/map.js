@@ -4,8 +4,8 @@ function init () {
 
 
     var myMap = new ymaps.Map('map', {
-        center: [55.76, 37.64],
-        zoom: 10
+        center: [55.831903, 37.411961], //0:48.500958, 1:55.846649
+        zoom: 7
     }, {
         searchControlProvider: 'yandex#map'
     });
