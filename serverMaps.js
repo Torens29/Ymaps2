@@ -1,7 +1,8 @@
  let express =  require('express');
 const axios = require('axios');
 const MongoClient = require("mongodb").MongoClient;
-const fs = require("fs");
+// const { shouldSendSameSiteNone } = require('should-send-same-site-none');
+
 
 let db, dbClient, collection, featuresDB =[];
 let mongoClient = new MongoClient("mongodb://localhost:27017/", { useNewUrlParser: true ,useUnifiedTopology: true});
@@ -22,18 +23,21 @@ mongoClient.connect(function(err, client){
     collection.find().toArray(function(err, results){
                  
         featuresDB = results;
-        client.close();
+        // client.close();
     });
 });
 
 let app =  express();
+// app.use(shouldSendSameSiteNone);
 app.use(express.static(__dirname + "/public"));
 app.get('/', function (req, res){
+        // res.cookie("foo", "bar", { sameSite: "none", secure: true });
         res.redirect('map.html');   
 });
 
 app.get('/q', function (req, res) {
 
+    // res.cookie("foo", "bar", { sameSite: "none", secure: true });
     var requestBbox = req.query.bbox.split(',');
 
     requestBbox.forEach((element, index, arr) => {
@@ -44,105 +48,49 @@ app.get('/q', function (req, res) {
 });
 
 async function sendFeatures(featuresDB, requestBbox){
-    await  fPush(featuresDB, requestBbox);//.catch(err => {console.log(err)});
+    // await  fPush(featuresDB, requestBbox);//.catch(err => {console.log(err)});
+    await find(requestBbox);
     console.log('send:', objects);
-    return(objects)
-    // res.jsonp(objects);
+    return(objects);
 }
 
-async function fPush(featuresDB, requestBbox){
-    console.log(featuresDB.length);
-    for (i = 0; i < featuresDB.length; i++) {
-        // console.log(i, featuresDB[i].coords)
-        await check().then(res =>{
-            if(res){
-                if( objects.features.length == 0) {
-                    objects.features.push({
-                        'type': 'Feature',
-                        'id': featuresDB[i].id,
-                        'geometry': {
-                            'type': "Point",
-                            "coordinates": featuresDB[i].coords
-                        },
-                        'properties':{
-                            "balloonContent": featuresDB[i].name + featuresDB[i].address,
-                            // "clusterCaption": "Метка "+featuresDB[i].id,
-                            "hintContent": featuresDB[i].address// featuresDB[i].name
-                        }
-                    });
-                }else{
-                    console.log('присутствует ', featuresDB[i].id, objects.features.includes(featuresDB[i]));
-                    if(!objects.features.includes(featuresDB[i])){
+function find(requestBbox){
+    let coordinates = [[
+        [requestBbox[0],requestBbox[1]], [requestBbox[0],requestBbox[3]], [requestBbox[2], requestBbox[3]], [requestBbox[2], requestBbox[1]], [requestBbox[0],requestBbox[1]]
+    ]];
+
+    // console.log('coordinates',coordinates)
+
+    collection.find({
+        coords:{
+            $geoWithin: {
+                $geometry: {
+                type : "Polygon" ,
+                coordinates
+                }
+            }
+        }    
+    }).toArray(function(err, results){
+                results.forEach(el =>{
+                    if(!objects.features.includes(el)){
                         objects.features.push({
                             'type': 'Feature',
-                            'id': featuresDB[i].id,
+                            'id': el.id,
                             'geometry': {
                                 "type": "Point",
-                                "coordinates": featuresDB[i].coords
+                                "coordinates": el.coords
                             },
                             'properties':{
-                                "balloonContent": featuresDB[i].name + featuresDB[i].address,
+                                "balloonContent": el.name + el.address,
                                 // "clusterCaption": "Метка "+featuresDB[i].id,
-                                "hintContent": featuresDB[i].address// featuresDB[i].name
+                                "hintContent": el.address// featuresDB[i].name
                             }
                         });
                     }
-                }
-            }
-           
-        });
-        
-        async function check (){
-            console.log('check', i)
-            if (featuresDB[i].coords[0] >= requestBbox[0] && featuresDB[i].coords[0] <= requestBbox[2] &&
-                featuresDB[i].coords[1] >= requestBbox[1] && featuresDB[i].coords[1] <= requestBbox[3]) {
-                 
-                        console.log('входит');
-                        return true;
-                    
-                    // if( objects.features.length == 0) {
-                    //     objects.features.push({
-                    //         'type': 'Feature',
-                    //         'id': featuresDB[i].id,
-                    //         'geometry': {
-                    //             'type': "Point",
-                    //             "coordinates": featuresDB[i].coords
-                    //         },
-                    //         'properties':{
-                    //             "balloonContent": featuresDB[i].name + featuresDB[i].dateStart,
-                    //             // "clusterCaption": "Метка "+featuresDB[i].id,
-                    //             "hintContent": featuresDB[i].name
-                    //         }
-                    //     });
-                    // }else{
-                    // objects.features.forEach((item, i, arr) => {
-                    //         if(item.id != featuresDB[i].id){
-                    //             console.log(item.id);
-                    //             objects.features.push({
-                    //                 'type': 'Feature',
-                    //                 'id': featuresDB[i].id,
-                    //                 'geometry': {
-                    //                     "type": "Point",
-                    //                     "coordinates": featuresDB[i].coords
-                    //                 },
-                    //                 'properties':{
-                    //                     "balloonContent": featuresDB[i].name + featuresDB[i].dateStart,
-                    //                     // "clusterCaption": "Метка "+featuresDB[i].id,
-                    //                     "hintContent": featuresDB[i].name
-                    //                 }
-                    //             });
-                    //         }else console.log(item.id,featuresDB[i].id ,item.id != featuresDB[i].id)
-
-                    // });
-                    // }
-                
-            } else{
-                // console.log('не входит')
-                return false;
-            } 
-        }
-    }
-    // return objects;
+                });
+        // console.log('ответ',results);
+        // client.close();
+    });
 }
 
 // process.on("SIGINT", () => {
