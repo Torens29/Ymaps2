@@ -4,7 +4,7 @@ const MongoClient = require("mongodb").MongoClient;
 // const { shouldSendSameSiteNone } = require('should-send-same-site-none');
 
 
-let db, dbClient, collection, featuresDB =[];
+let db, dbClient, collection;
 let mongoClient = new MongoClient("mongodb://localhost:27017/", { useNewUrlParser: true ,useUnifiedTopology: true});
 
 let objects = {
@@ -16,7 +16,7 @@ mongoClient.connect(function(err, client){
 
     if(err) return console.log(err);    
     db = client.db("Tenders");
-    collection =  db.collection('tenderInfo2');
+    collection =  db.collection('tenderInfo');
     dbClient = client;
     
   
@@ -44,10 +44,10 @@ app.get('/q', function (req, res) {
         arr[index] = parseFloat(element);
     });
     console.log(requestBbox);
-    sendFeatures(featuresDB,requestBbox).then(obj => res.jsonp(obj));
+    sendFeatures(requestBbox).then(obj => res.jsonp(obj));
 });
 
-async function sendFeatures(featuresDB, requestBbox){
+async function sendFeatures(requestBbox){
     // await  fPush(featuresDB, requestBbox);//.catch(err => {console.log(err)});
     await find(requestBbox);
     console.log('send:', objects);
@@ -55,22 +55,35 @@ async function sendFeatures(featuresDB, requestBbox){
 }
 
 function find(requestBbox){
-    let coordinates = [[
-        [requestBbox[0],requestBbox[1]], [requestBbox[0],requestBbox[3]], [requestBbox[2], requestBbox[3]], [requestBbox[2], requestBbox[1]], [requestBbox[0],requestBbox[1]]
-    ]];
+    let coordinates = [
+        // [requestBbox[0],requestBbox[1]],
+        // [requestBbox[0],requestBbox[3]],
+        // [requestBbox[2], requestBbox[3]], 
+        // [requestBbox[2], requestBbox[1]], 
+        // [requestBbox[0],requestBbox[1]]
+        [requestBbox[1],requestBbox[0]],
+        [requestBbox[3],requestBbox[0]],
+        [requestBbox[3], requestBbox[2]], 
+        [requestBbox[1], requestBbox[2]], 
+        [requestBbox[1],requestBbox[0]]
+    ];
 
-    // console.log('coordinates',coordinates)
+    // console.log('coordinates',coordinates);
 
     collection.find({
         coords:{
             $geoWithin: {
                 $geometry: {
                 type : "Polygon" ,
-                coordinates
+                coordinates: [coordinates]
                 }
             }
         }    
     }).toArray(function(err, results){
+
+        console.log('err Ошибка епт юлять: ', err);
+        
+                console.log("results", results);
                 results.forEach(el =>{
                     if(!objects.features.includes(el)){
                         objects.features.push({
@@ -78,7 +91,7 @@ function find(requestBbox){
                             'id': el.id,
                             'geometry': {
                                 "type": "Point",
-                                "coordinates": el.coords
+                                "coordinates": [el.coords.coordinates[1], el.coords.coordinates[0]]
                             },
                             'properties':{
                                 "balloonContent": el.name + el.address,
