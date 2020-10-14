@@ -1,10 +1,11 @@
  let express =  require('express');
+ cookieParser = require('cookie-parser');
 const axios = require('axios');
 const MongoClient = require("mongodb").MongoClient;
 // const { shouldSendSameSiteNone } = require('should-send-same-site-none');
 
 
-let db, dbClient, collection;
+let db, dbClient, collection, arrOfcookies = [];
 let mongoClient = new MongoClient("mongodb://localhost:27017/", { useNewUrlParser: true ,useUnifiedTopology: true});
 
 let objects = {
@@ -30,6 +31,8 @@ mongoClient.connect(function(err, client){
 let app =  express();
 // app.use(shouldSendSameSiteNone);
 app.use(express.static(__dirname + "/public"));
+app.use(cookieParser('secret key'));
+
 app.get('/', function (req, res){
         // res.cookie("foo", "bar", { sameSite: "none", secure: true });
         res.redirect('map.html');   
@@ -37,7 +40,11 @@ app.get('/', function (req, res){
 
 app.get('/q', function (req, res) {
 
-    // res.cookie("foo", "bar", { sameSite: "none", secure: true });
+    if(typeof req.cookies.obj === undefined ){
+        arrOfcookies = req.cookies.obj.split(',');
+    }
+    
+
     var requestBbox = req.query.bbox.split(',');
 
     requestBbox.forEach((element, index, arr) => {
@@ -80,12 +87,14 @@ function find(requestBbox){
             }
         }    
     }).toArray(function(err, results){
+                // console.log("results", results);
 
-        console.log('err Ошибка епт юлять: ', err);
-        
-                console.log("results", results);
                 results.forEach(el =>{
-                    if(!objects.features.includes(el)){
+
+                    if(!arrOfcookies.includes(el.id.toString())){
+                        
+                        console.log('EL true', arrOfcookies, el.id.toString());
+
                         objects.features.push({
                             'type': 'Feature',
                             'id': el.id,
@@ -101,15 +110,9 @@ function find(requestBbox){
                         });
                     }
                 });
-        // console.log('ответ',results);
-        // client.close();
     });
 }
 
-// process.on("SIGINT", () => {
-//     dbClient.close();
-//     process.exit();
-//   });
   
 app.listen(3000, function () {
     console.log('app listening on port 3000!');

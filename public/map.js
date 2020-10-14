@@ -1,7 +1,7 @@
 
 ymaps.ready(init);
 
-function init () {
+ function init () {
 
 
     var myMap = new ymaps.Map('map', {
@@ -11,7 +11,7 @@ function init () {
         searchControlProvider: 'yandex#map'
     });
 
-    let Manager = new ymaps.LoadingObjectManager('http://127.0.0.1:3000/q?bbox=%b', {   
+    let loadingObjectManager = new ymaps.LoadingObjectManager('http://127.0.0.1:3000/q?bbox=%b', {   
         
         clusterize: true
         // clusterHasBalloon: false,
@@ -20,6 +20,24 @@ function init () {
         // splitRequests : true
     });
 
-    myMap.geoObjects.add(Manager);
+    myMap.geoObjects.add(loadingObjectManager);
+
+    loadingObjectManager.objects.events.add(['add'], ObjsAddOnMap);
+   
+    function ObjsAddOnMap(e){
+        console.log('qwer');
+        let arrOfObjs=[];
+        loadingObjectManager.objects.getAll().forEach(function(item, i, arr) {
+            arrOfObjs.push(item.id);
+        });
+        document.cookie = `obj=${arrOfObjs}`;
+    }
+    
+
+    
+    
+    
+   
+   
 }
 
