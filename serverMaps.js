@@ -51,6 +51,10 @@ app.get('/q', function (req, res) {
         arr[index] = parseFloat(element);
     });
     console.log(requestBbox);
+    objects = {
+         type: 'FeatureCollection',
+         features: []     
+     };
     sendFeatures(requestBbox).then(obj => res.jsonp(obj));
 });
 
