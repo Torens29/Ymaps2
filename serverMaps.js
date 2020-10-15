@@ -51,11 +51,12 @@ app.get('/q', function (req, res) {
         arr[index] = parseFloat(element);
     });
     console.log(requestBbox);
+    
+    sendFeatures(requestBbox).then(obj => res.jsonp(obj));
     objects = {
          type: 'FeatureCollection',
          features: []     
      };
-    sendFeatures(requestBbox).then(obj => res.jsonp(obj));
 });
 
 async function sendFeatures(requestBbox){
@@ -67,11 +68,7 @@ async function sendFeatures(requestBbox){
 
 function find(requestBbox){
     let coordinates = [
-        // [requestBbox[0],requestBbox[1]],
-        // [requestBbox[0],requestBbox[3]],
-        // [requestBbox[2], requestBbox[3]], 
-        // [requestBbox[2], requestBbox[1]], 
-        // [requestBbox[0],requestBbox[1]]
+        
         [requestBbox[1],requestBbox[0]],
         [requestBbox[3],requestBbox[0]],
         [requestBbox[3], requestBbox[2]], 
