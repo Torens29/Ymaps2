@@ -11,7 +11,7 @@ ymaps.ready(init);
         searchControlProvider: 'yandex#map'
     });
 
-    let loadingObjectManager = new ymaps.LoadingObjectManager('http://127.0.0.1:3000/q?bbox=%b', {   
+    let loadingObjectManager = new ymaps.LoadingObjectManager('http://185.185.71.28:3000/q?bbox=%b', {   
         
         clusterize: true
         // clusterHasBalloon: false,
