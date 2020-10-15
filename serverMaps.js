@@ -48,7 +48,6 @@ app.get('/q', function (req, res) {
     requestBbox.forEach((element, index, arr) => {
         arr[index] = parseFloat(element);
     });
-<<<<<<< HEAD
     // console.log(requestBbox);
 
     sendFeatures(requestBbox)
@@ -62,29 +61,10 @@ async function sendFeatures(requestBbox){
     // await find(requestBbox);
     console.log('send:', await find(requestBbox));
     return(await find(requestBbox));
-=======
-    console.log(requestBbox);
-    
-    sendFeatures(requestBbox).then(obj => res.jsonp(obj));
-    objects = {
-         type: 'FeatureCollection',
-         features: []     
-     };
-});
-
-async function sendFeatures(requestBbox){
-    await find(requestBbox);
-    console.log('send:', objects);
-    return(objects);
->>>>>>> 885af7913d452a729c952e1f26dddc99182ae254
 }
 
 function find(requestBbox){
     let coordinates = [
-<<<<<<< HEAD
-=======
-        
->>>>>>> 885af7913d452a729c952e1f26dddc99182ae254
         [requestBbox[1],requestBbox[0]],
         [requestBbox[3],requestBbox[0]],
         [requestBbox[3], requestBbox[2]], 
