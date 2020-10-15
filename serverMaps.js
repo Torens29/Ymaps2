@@ -34,7 +34,6 @@ app.use(express.static(__dirname + "/public"));
 app.use(cookieParser('secret key'));
 
 app.get('/', function (req, res){
-        // res.cookie("foo", "bar", { sameSite: "none", secure: true });
         res.redirect('map.html');   
 });
 
@@ -60,7 +59,6 @@ app.get('/q', function (req, res) {
 });
 
 async function sendFeatures(requestBbox){
-    // await  fPush(featuresDB, requestBbox);//.catch(err => {console.log(err)});
     await find(requestBbox);
     console.log('send:', objects);
     return(objects);
