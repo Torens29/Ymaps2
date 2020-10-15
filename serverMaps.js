@@ -33,7 +33,6 @@ app.use(express.static(__dirname + "/public"));
 app.use(cookieParser('secret key'));
 
 app.get('/', function (req, res){
-        // res.cookie("foo", "bar", { sameSite: "none", secure: true });
         res.redirect('map.html');   
 });
 
