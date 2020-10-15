@@ -107,9 +107,15 @@ function find(requestBbox){
                         "coordinates": [el.coords.coordinates[1], el.coords.coordinates[0]]
                     },
                     'properties':{
-                        "balloonContent": el.name + el.address,
-                        // "clusterCaption": "Метка "+featuresDB[i].id,
-                        "hintContent": el.address// featuresDB[i].name
+                        "balloonContentHeader": el.name,
+                        "balloonContentBody":  `Цена: ${el.price} <br>
+                                                Дата выставления тендера: ${el.dateStart.getDate()}.${el.dateStart.getMonth()}.${el.dateStart.getFullYear()}<br>
+                                                Дата окончания тендера:  ${el.dateEnd.getDate()}.${el.dateEnd.getMonth()}.${el.dateEnd.getFullYear()}<br>
+                                                Отрасль: ${el.typeOfTender} <br>
+                                                <a href='${el.link}'>Подробнее</a><br>
+                                                `,
+                        "balloonContentFooter": el.address,
+                        "hintContent": el.name,
                     }
                 });
                 

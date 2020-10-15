@@ -1,3 +1,6 @@
+if(document.readyState == 'loading'){
+    document.cookie = 'obj=';
+}
 
 ymaps.ready(init);
 
@@ -23,9 +26,8 @@ ymaps.ready(init);
     myMap.geoObjects.add(loadingObjectManager);
 
     loadingObjectManager.objects.events.add(['add'], ObjsAddOnMap);
-   
+
     function ObjsAddOnMap(e){
-        console.log('qwer');
         let arrOfObjs=[];
         loadingObjectManager.objects.getAll().forEach(function(item, i, arr) {
             arrOfObjs.push(item.id);
@@ -33,7 +35,9 @@ ymaps.ready(init);
         document.cookie = `obj=${arrOfObjs}`;
     }
     
-
+    
+  
+  
     
     
     
