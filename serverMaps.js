@@ -98,7 +98,11 @@ function find(requestBbox){
             if(!arrOfcookies.includes(el.id.toString())){
                 
                 // console.log('EL true', arrOfcookies, el.id.toString());
-                
+                let status;
+                if((el.dateEnd - Date.now()) > 0){
+                    status = "Активен";
+                } else status = 'Завершен';
+
                 objects.features.push({
                     'type': 'Feature',
                     'id': el.id,
@@ -111,14 +115,15 @@ function find(requestBbox){
                         "balloonContentBody":  `Цена: ${el.price} <br>
                                                 Дата выставления тендера: ${el.dateStart.getDate()}.${el.dateStart.getMonth()}.${el.dateStart.getFullYear()}<br>
                                                 Дата окончания тендера:  ${el.dateEnd.getDate()}.${el.dateEnd.getMonth()}.${el.dateEnd.getFullYear()}<br>
+                                                Статус: ${status} <br>
                                                 Отрасль: ${el.typeOfTender} <br>
                                                 <a href='${el.link}'>Подробнее</a><br>
                                                 `,
                         "balloonContentFooter": el.address,
                         "hintContent": el.name,
+                        "type":el.typeOfTender
                     }
                 });
-                
             }
         });
         objOfObjs = objects;
